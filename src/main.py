@@ -121,38 +121,38 @@ def handle_raw(packet, *args, **kwargs):
     loop.create_task(chat['revolt_chat'].send(
         content=f"Successfully linked with {chat['meower_chat']}"))
 
-@MEOWER.command()
-def account(ctx, revolt_user):
+@bot.command(name="account")
+async def account(ctx, revolt_user):
     if revolt_user not in LINKING_USERS:
-        message.ctx.reply("You are not linking a Revolt account to your Meower account")
+        await message.ctx.reply("You are not linking a Revolt account to your Meower account")
         return
 
     # check if the revolt user is the same as the one that started the linking
     if LINKING_USERS[revolt_user]['meower_username'] != ctx.user.username:
-        message.ctx.reply("You are not linking your Revolt account to your Meower account")
+        await message.ctx.reply("You are not linking your Revolt account to your Meower account")
         return
 
     # insert the user into the database
     DATABASE.users.insert_one(
         {"meower_username": ctx.user.username, "revolt_user": revolt_user, "pfp": get_user_pfp(LINKING_USERS[revolt_user]['meower_username'])})
     
-    ctx.reply("Successfully linked your Revolt account to your Meower account!")
+    await ctx.reply("Successfully linked your Revolt account to your Meower account!")
 
     # remove the user from the linking users
     LINKING_USERS.pop(revolt_user)
 
-@MEOWER.command()
-def link(ctx, revolt_chat: str):
+@bot.command(name="link")
+async def link(ctx, revolt_chat: str):
     chat_id = ctx.message.chat
 
     if chat_id not in LINKING_CHATS:
-        message.ctx.reply("You are not linking a Revolt channel")
+        await message.ctx.reply("You are not linking a Revolt channel")
         return
 
     # check if the revolt user is the same as the one that started the linking, and has permission to link the channel (ie. owns the chat)
     chat_linking = LINKING_CHATS[chat_id]
     if chat_linking['meower_chat'] != ctx.message.chat:
-        message.ctx.reply(
+        await message.ctx.reply(
             "Please run that command in the group chat you're trying to link!")
         return
 
